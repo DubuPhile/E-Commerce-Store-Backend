@@ -10,6 +10,7 @@ import credentials from "./middleware/credentials.js";
 import corsOptions from "./config/corsOptions.js";
 import userRoutes from "./routes/userRoutes.js";
 import refreshTokenRoutes from "./routes/refreshTokenRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 import { fileURLToPath } from "url";
 dotenv.config();
 const app = express();
@@ -32,6 +33,7 @@ app.use(morgan("dev"));
 //routes
 app.use("/user", userRoutes);
 app.use("/refresh", refreshTokenRoutes);
+app.use("/product", productRoutes);
 //Static Files
 app.use(express.static(path.join(__dirname, "client", "dist")));
 app.get("{*splat}", (req, res) => {
