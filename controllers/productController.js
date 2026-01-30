@@ -1,14 +1,26 @@
+import { bucket } from "../config/firebase.js";
 import productsModel from "../models/productsModel.js";
 
 export const addProduct = async (req, res) => {
-  const { name, imageUrl, price, category } = req.body;
+  const { name, price, category } = req.body;
 
-  if (!name || !imageUrl || !price || !category) {
+  if (!name || !category || !price || !req.file) {
     return res
       .status(400)
-      .json({ message: "Name, ImageUrl, Price and category is required" });
+      .json({ message: "Name, Image, Price and category is required" });
   }
   try {
+    const file = req.file;
+    const fileName = `Products/${file.originalname}`;
+    const fileUpload = bucket.file(fileName);
+
+    await fileUpload.save(file.buffer, {
+      metadata: { contentType: file.mimetype },
+      public: true,
+    });
+
+    const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
     const result = await productsModel.create({
       name: name,
       imageUrl: imageUrl,
