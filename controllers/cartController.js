@@ -1,6 +1,4 @@
 import CartModel from "../models/CartModel.js";
-import productsModel from "../models/productsModel.js";
-import user from "../models/user.js";
 
 export const getMyCart = async (req, res) => {
   try {
@@ -71,4 +69,30 @@ export const deleteItem = async (req, res) => {
   }
 };
 
-export const CartController = { addToCart, getMyCart, deleteItem };
+export const changeQuantity = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+    const updateCart = await CartModel.findOneAndUpdate(
+      { user: userId, "items._id": itemId },
+      { $set: { "items.$.quantity": quantity } },
+      { new: true },
+    );
+    if (!updateCart) {
+      return res.status(404).json({ message: "Cart or item not found" });
+    }
+
+    res.status(200).json(updateCart);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to Change Quantity" });
+  }
+};
+
+export const CartController = {
+  addToCart,
+  getMyCart,
+  deleteItem,
+  changeQuantity,
+};
