@@ -5,7 +5,6 @@ import user from "../models/user.js";
 export const getMyCart = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
     const mycart = await CartModel.findOne({ user: userId }).populate(
       "items.product",
     );
@@ -52,4 +51,24 @@ export const addToCart = async (req, res) => {
   }
 };
 
-export const CartController = { addToCart };
+export const deleteItem = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.params;
+
+    const updatedCart = await CartModel.findOneAndUpdate(
+      { user: userId },
+      { $pull: { items: { _id: productId } } },
+      { new: true },
+    );
+    if (!updatedCart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+    res.status(200).json(updatedCart);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const CartController = { addToCart, getMyCart, deleteItem };
