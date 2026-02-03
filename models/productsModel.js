@@ -9,6 +9,7 @@ const productSchema = new schema(
     },
     category: String,
     price: Number,
+    description: String,
   },
   { timestamps: true },
 );
