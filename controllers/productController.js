@@ -44,4 +44,43 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-export const productController = { addProduct, getAllProducts };
+export const searchProducts = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) return res.status(400).json({ message: "Query is Required!" });
+
+    const products = await productsModel.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ],
+    });
+
+    res.json(products);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getProductDetails = async (req, res) => {
+  try {
+    const productId = req.params.Id;
+    if (!productId)
+      return res.status(400).json({ message: "Product not Found!" });
+
+    const product = await productsModel.findById(productId);
+
+    res.status(200).json(product);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Invalid getting Products" });
+  }
+};
+export const productController = {
+  addProduct,
+  getAllProducts,
+  searchProducts,
+  getProductDetails,
+};
