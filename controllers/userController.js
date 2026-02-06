@@ -2,10 +2,23 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
+const PWD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 //Register Controller
 const registerUser = async (req, res) => {
   try {
     const { user, email, password } = req.body;
+
+    if (!USER_REGEX.test(user))
+      return res.status(400).json({ message: "Invalid username" });
+
+    if (!PWD_REGEX.test(password))
+      return res.status(400).json({ message: "Invalid password" });
+
+    if (!EMAIL_REGEX.test(email))
+      return res.status(400).json({ message: "Invalid email" });
 
     if (!user || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
