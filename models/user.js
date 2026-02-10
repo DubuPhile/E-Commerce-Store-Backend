@@ -10,6 +10,8 @@ const userSchema = new schema({
     type: String,
     required: true,
   },
+  gender: String,
+  date: Number,
   roles: {
     User: {
       type: Number,
