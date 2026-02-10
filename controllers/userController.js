@@ -126,4 +126,18 @@ const logoutUser = async (req, res) => {
   }
 };
 
-export default { registerUser, LoginUser, logoutUser };
+const getUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log(userId);
+    const foundUser = await User.findOne({ _id: userId });
+    if (!foundUser) {
+      return res.sendStatus(401);
+    }
+
+    res.status(200).json({ success: true, data: foundUser });
+  } catch (err) {
+    console.log(err);
+  }
+};
+export default { registerUser, LoginUser, logoutUser, getUser };
