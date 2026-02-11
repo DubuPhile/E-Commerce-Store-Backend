@@ -129,7 +129,6 @@ const logoutUser = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
     const foundUser = await User.findOne({ _id: userId });
     if (!foundUser) {
       return res.sendStatus(401);
@@ -138,6 +137,33 @@ const getUser = async (req, res) => {
     res.status(200).json({ success: true, data: foundUser });
   } catch (err) {
     console.log(err);
+    res
+      .status(500)
+      .json({ success: false, messsage: "Error getting User details" });
   }
 };
-export default { registerUser, LoginUser, logoutUser, getUser };
+
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: req.body },
+      {
+        new: true,
+      },
+    );
+    res.status(200).json({
+      success: true,
+      message: "Update Successfully!",
+      data: updatedUser,
+    });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .json({ success: false, message: "Error Updating User Status" });
+  }
+};
+export default { registerUser, LoginUser, logoutUser, getUser, updateUser };
