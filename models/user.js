@@ -11,7 +11,7 @@ const userSchema = new schema({
     required: true,
   },
   gender: String,
-  date: Number,
+  date: String,
   roles: {
     User: {
       type: Number,
