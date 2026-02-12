@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { bucket } from "../config/firebase.js";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
@@ -146,10 +147,34 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = await User.findById(userId);
+    const updateData = { ...req.body };
 
+    const file = req.file;
+    if (file) {
+      if (user.image) {
+        const filePath = user.image.split(
+          `https://storage.googleapis.com/${bucket.name}/`,
+        )[1];
+        const oldFile = bucket.file(filePath);
+        await oldFile
+          .delete()
+          .catch(() => console.log("No old file to delete"));
+      }
+      const fileName = `Users/${userId}/${Date.now()}-${file.originalname}`;
+      const fileUpload = bucket.file(fileName);
+
+      await fileUpload.save(file.buffer, {
+        metadata: { contentType: file.mimetype },
+        public: true,
+      });
+
+      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+      updateData.image = imageUrl;
+    }
     const updatedUser = await User.findOneAndUpdate(
       { _id: userId },
-      { $set: req.body },
+      { $set: updateData },
       {
         new: true,
       },
