@@ -12,6 +12,7 @@ const userSchema = new schema({
   },
   gender: String,
   date: String,
+  image: String,
   roles: {
     User: {
       type: Number,
