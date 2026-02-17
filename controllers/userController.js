@@ -100,6 +100,7 @@ const LoginUser = async (req, res) => {
   }
 };
 
+//logout account
 const logoutUser = async (req, res) => {
   try {
     const cookies = req.cookies;
@@ -127,6 +128,7 @@ const logoutUser = async (req, res) => {
   }
 };
 
+//get user
 const getUser = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -144,6 +146,7 @@ const getUser = async (req, res) => {
   }
 };
 
+//update user profile
 const updateUser = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -191,4 +194,52 @@ const updateUser = async (req, res) => {
       .json({ success: false, message: "Error Updating User Status" });
   }
 };
-export default { registerUser, LoginUser, logoutUser, getUser, updateUser };
+
+//change password
+const changePwd = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPwd, newPwd } = req.body;
+
+    if (!currentPwd || !newPwd) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const foundUser = await User.findOne({ _id: userId }).select("+password");
+    if (!foundUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const match = await bcrypt.compare(currentPwd, foundUser.password);
+    if (!match) {
+      return res.status(400).json({ message: "Password do not match" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPwd, salt);
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password Change Successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: "Error changing password",
+    });
+  }
+};
+export default {
+  registerUser,
+  LoginUser,
+  logoutUser,
+  getUser,
+  updateUser,
+  changePwd,
+};
