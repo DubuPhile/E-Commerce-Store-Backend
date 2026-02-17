@@ -19,4 +19,6 @@ router.put(
   userController.updateUser,
 );
 
+router.patch("/changePwd", verifyJWT, userController.changePwd);
+
 export default router;
