@@ -2,6 +2,8 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { bucket } from "../config/firebase.js";
+import OTP from "../models/otpModel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
@@ -215,13 +217,21 @@ const changePwd = async (req, res) => {
       return res.status(400).json({ message: "Password do not match" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPwd, salt);
+    const verOTP = await OTP.findOne({
+      userId: foundUser._id,
+      isVerified: true,
+    });
+
+    if (!verOTP) return res.status(400).json({ message: "OTP not verified" });
+
+    const hashedPassword = await bcrypt.hash(newPwd, 10);
     await User.findOneAndUpdate(
       { _id: userId },
       { $set: { password: hashedPassword } },
       { new: true },
     );
+
+    await OTP.deleteOne({ _id: verOTP._id });
 
     res.status(200).json({
       success: true,
@@ -235,6 +245,89 @@ const changePwd = async (req, res) => {
     });
   }
 };
+
+const sendOTP = async (req, res) => {
+  try {
+    const { email, type } = req.body;
+
+    const generateOTP = () => {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    };
+
+    if (!["FORGOT_PASSWORD", "CHANGE_PASSWORD"].includes(type)) {
+      return res.status(400).json({ message: "Invalid OTP type" });
+    }
+
+    let user;
+
+    if (type === "FORGOT_PASSWORD") {
+      if (!email)
+        return res.status(400).json({ message: "Email is required!" });
+      user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: "User not found" });
+    }
+
+    if (type === "CHANGE_PASSWORD") {
+      if (!req.user?.id)
+        return res.status(401).json({ message: "Unauthorized" });
+      user = await User.findOne({ _id: req.user?.id });
+    }
+
+    const otp = generateOTP();
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedOtp = await bcrypt.hash(otp, salt);
+
+    await OTP.deleteMany({ userId: user._id, type });
+
+    await sendEmail({
+      to: user?.email,
+      html: `Your OTP is ${otp}. It will expire within 5mins.`,
+    });
+    await OTP.create({
+      userId: user._id,
+      otp: hashedOtp,
+      type,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    });
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error Sending OTP" });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const userId = req?.user?.id;
+
+    let user;
+
+    if (userId) {
+      user = await User.findOne({ _id: userId });
+    } else {
+      user = await User.findOne({ email });
+    }
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const verOTP = await OTP.findOne({ userId: user._id });
+    if (!verOTP) return res.status(404).json({ message: "OTP not found" });
+
+    const matchOTP = await bcrypt.compare(otp, verOTP.otp);
+    if (!matchOTP)
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+
+    verOTP.isVerified = true;
+    await verOTP.save();
+
+    res.status(200).json({ message: "OTP verified" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error verifying OTP" });
+  }
+};
 export default {
   registerUser,
   LoginUser,
@@ -242,4 +335,6 @@ export default {
   getUser,
   updateUser,
   changePwd,
+  sendOTP,
+  verifyOTP,
 };
