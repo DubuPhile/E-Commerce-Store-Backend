@@ -21,4 +21,9 @@ router.put(
 
 router.patch("/changePwd", verifyJWT, userController.changePwd);
 
+//OTP routes
+router.post("/change-password/send-otp", verifyJWT, userController.sendOTP);
+
+router.post("/verify-otp", verifyJWT, userController.verifyOTP);
+
 export default router;
