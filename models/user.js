@@ -10,7 +10,7 @@ const userSchema = new schema({
     type: String,
     required: true,
   },
-  gender: String,
+  gender: { type: String, default: "Other" },
   date: String,
   image: String,
   roles: {
@@ -20,9 +20,20 @@ const userSchema = new schema({
     },
     Admin: Number,
   },
+  authProviderId: {
+    type: String,
+    select: false,
+  },
+  authProvider: {
+    type: String,
+    enum: ["local", "firebase"],
+    default: "local",
+  },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return this.provider === "local";
+    },
     select: false,
   },
   refreshToken: {
