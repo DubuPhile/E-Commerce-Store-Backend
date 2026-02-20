@@ -94,7 +94,12 @@ const LoginUser = async (req, res) => {
         secure: true,
         maxAge: 24 * 60 * 60 * 1000,
       });
-      res.json({ accessToken, user: foundUser.user, roles });
+      res.json({
+        accessToken,
+        user: foundUser.user,
+        roles,
+        hasLocalPassword: !!foundUser.password,
+      });
     }
   } catch (err) {
     console.log(err);
@@ -157,7 +162,7 @@ const updateUser = async (req, res) => {
 
     const file = req.file;
     if (file) {
-      if (user.image) {
+      if (user.image && user.image !== "null") {
         const filePath = user.image.split(
           `https://storage.googleapis.com/${bucket.name}/`,
         )[1];
@@ -267,7 +272,7 @@ const sendOTP = async (req, res) => {
       if (!user) return res.status(404).json({ message: "User not found" });
     }
 
-    if (type === "CHANGE_PASSWORD") {
+    if (type === "CHANGE_PASSWORD" || type === "SET_PASSWORD") {
       if (!req.user?.id)
         return res.status(401).json({ message: "Unauthorized" });
       user = await User.findOne({ _id: req.user?.id });
