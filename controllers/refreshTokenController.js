@@ -5,7 +5,9 @@ const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(401);
   const refreshToken = cookies.jwt;
-  const foundUser = await User.findOne({ refreshToken }).exec();
+  const foundUser = await User.findOne({ refreshToken })
+    .select("+password")
+    .exec();
   if (!foundUser) return res.sendStatus(403);
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
@@ -23,7 +25,12 @@ const handleRefreshToken = async (req, res) => {
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1h" },
     );
-    res.json({ accessToken, user: foundUser.user, roles });
+    res.json({
+      accessToken,
+      user: foundUser.user,
+      roles,
+      hasLocalPassword: !!foundUser.password,
+    });
   });
 };
 
