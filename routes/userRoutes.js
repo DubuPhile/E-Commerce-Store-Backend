@@ -2,11 +2,14 @@ import express from "express";
 import userController from "../controllers/userController.js";
 import verifyJWT from "../middleware/verifyJWT.js";
 import { upload } from "../middleware/multer.js";
+import { firebaseLogin } from "../controllers/firebaseLogin.js";
 const router = express.Router();
 
 router.post("/register", userController.registerUser);
 
 router.post("/login", userController.LoginUser);
+
+router.post("/firebase-login", firebaseLogin);
 
 router.post("/logout", userController.logoutUser);
 
