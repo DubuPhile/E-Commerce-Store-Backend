@@ -17,7 +17,7 @@ const otpSchema = new schema({
   },
   type: {
     type: String,
-    enum: ["FORGOT_PASSWORD", "CHANGE_PASSWORD"],
+    enum: ["FORGOT_PASSWORD", "CHANGE_PASSWORD", "SET_PASSWORD"],
     required: true,
   },
   expiresAt: {
