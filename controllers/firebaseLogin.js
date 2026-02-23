@@ -1,7 +1,9 @@
 import admin from "../config/firebase.js";
 import user from "../models/user.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { bucket } from "../config/firebase.js";
+import otpModel from "../models/otpModel.js";
 
 export const firebaseLogin = async (req, res) => {
   const { token } = req.body;
@@ -76,5 +78,45 @@ export const firebaseLogin = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(401).json({ message: "Firebase Login Failed." });
+  }
+};
+
+export const setPassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { newPassword, confirmPassword } = req.body;
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({
+        success: false,
+        message: "New Password and Confirm Password do not Match!",
+      });
+    }
+    const foundUser = await user.findOne({ _id: userId });
+    if (!foundUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const verOTP = await otpModel.findOne({
+      userId: foundUser._id,
+      isVerified: true,
+    });
+
+    if (!verOTP) return res.status(400).json({ message: "OTP not verified" });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await user.findOneAndUpdate(
+      { _id: userId },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
+
+    await otpModel.deleteOne({ _id: verOTP._id });
+    res
+      .status(200)
+      .json({ success: true, message: "Password Set Successfully!" });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .json({ success: false, message: "Error setting Password!" });
   }
 };
