@@ -1,6 +1,7 @@
 import admin from "../config/firebase.js";
 import user from "../models/user.js";
 import jwt from "jsonwebtoken";
+import { bucket } from "../config/firebase.js";
 
 export const firebaseLogin = async (req, res) => {
   const { token } = req.body;
@@ -11,10 +12,30 @@ export const firebaseLogin = async (req, res) => {
 
     let foundUser = await user.findOne({ email }).select("+password");
     if (!foundUser) {
+      let uploadImageUrl = null;
+
+      if (picture) {
+        const response = await fetch(picture);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const filename = `Users/${name}/${Date.now()}-${name}`;
+        const file = bucket.file(filename);
+
+        await file.save(buffer, {
+          metadata: {
+            contentType: "image/jpeg",
+          },
+          public: true,
+        });
+
+        uploadImageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+      }
+
       foundUser = await user.create({
         user: name,
         email,
-        image: picture,
+        image: uploadImageUrl,
         authProviderId: uid,
         authProvider: "firebase",
       });
