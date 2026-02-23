@@ -259,7 +259,9 @@ const sendOTP = async (req, res) => {
       return Math.floor(100000 + Math.random() * 900000).toString();
     };
 
-    if (!["FORGOT_PASSWORD", "CHANGE_PASSWORD"].includes(type)) {
+    if (
+      !["FORGOT_PASSWORD", "CHANGE_PASSWORD", "SET_PASSWORD"].includes(type)
+    ) {
       return res.status(400).json({ message: "Invalid OTP type" });
     }
 
