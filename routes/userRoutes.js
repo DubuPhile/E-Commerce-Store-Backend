@@ -2,7 +2,7 @@ import express from "express";
 import userController from "../controllers/userController.js";
 import verifyJWT from "../middleware/verifyJWT.js";
 import { upload } from "../middleware/multer.js";
-import { firebaseLogin } from "../controllers/firebaseLogin.js";
+import { firebaseLogin, setPassword } from "../controllers/firebaseLogin.js";
 const router = express.Router();
 
 router.post("/register", userController.registerUser);
@@ -23,6 +23,8 @@ router.put(
 );
 
 router.patch("/changePwd", verifyJWT, userController.changePwd);
+
+router.patch("/set-password", verifyJWT, setPassword);
 
 //OTP routes
 router.post("/change-password/send-otp", verifyJWT, userController.sendOTP);
