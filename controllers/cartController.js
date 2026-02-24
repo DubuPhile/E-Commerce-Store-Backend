@@ -89,10 +89,31 @@ export const changeQuantity = async (req, res) => {
     res.status(500).json({ message: "Failed to Change Quantity" });
   }
 };
+export const changeCheckBox = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { itemId } = req.params;
+    const { checkBox } = req.body;
+    const updateCart = await CartModel.findOneAndUpdate(
+      { user: userId, "items._id": itemId },
+      { $set: { "items.$.checkBox": checkBox } },
+      { new: true },
+    );
+    if (!updateCart) {
+      return res.status(404).json({ message: "Cart or item not found" });
+    }
+
+    res.status(200).json(updateCart);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to Changing checkBox" });
+  }
+};
 
 export const CartController = {
   addToCart,
   getMyCart,
   deleteItem,
   changeQuantity,
+  changeCheckBox,
 };
