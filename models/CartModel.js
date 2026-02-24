@@ -18,6 +18,7 @@ const cartSchema = new schema({
         type: Number,
         default: 1,
       },
+      checkBox: { type: Boolean, default: false },
     },
   ],
 });
