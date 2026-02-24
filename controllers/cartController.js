@@ -69,44 +69,45 @@ export const deleteItem = async (req, res) => {
   }
 };
 
-export const changeQuantity = async (req, res) => {
+export const handleCartAction = async (req, res) => {
   try {
     const userId = req.user.id;
     const { itemId } = req.params;
-    const { quantity } = req.body;
-    const updateCart = await CartModel.findOneAndUpdate(
-      { user: userId, "items._id": itemId },
-      { $set: { "items.$.quantity": quantity } },
-      { new: true },
-    );
-    if (!updateCart) {
+    const { action, quantity, checkBox } = req.body;
+
+    let update;
+
+    switch (action) {
+      case "updateQty":
+        // Update item quantity
+        update = await CartModel.findOneAndUpdate(
+          { user: userId, "items._id": itemId },
+          { $set: { "items.$.quantity": quantity } },
+          { new: true },
+        );
+        break;
+
+      case "toggleCheckbox":
+        // Update item checkbox
+        update = await CartModel.findOneAndUpdate(
+          { user: userId, "items._id": itemId },
+          { $set: { "items.$.checkBox": checkBox } },
+          { new: true },
+        );
+        break;
+
+      default:
+        return res.status(400).json({ message: "Invalid action" });
+    }
+
+    if (!update) {
       return res.status(404).json({ message: "Cart or item not found" });
     }
 
-    res.status(200).json(updateCart);
+    res.status(200).json(update);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Failed to Change Quantity" });
-  }
-};
-export const changeCheckBox = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { itemId } = req.params;
-    const { checkBox } = req.body;
-    const updateCart = await CartModel.findOneAndUpdate(
-      { user: userId, "items._id": itemId },
-      { $set: { "items.$.checkBox": checkBox } },
-      { new: true },
-    );
-    if (!updateCart) {
-      return res.status(404).json({ message: "Cart or item not found" });
-    }
-
-    res.status(200).json(updateCart);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Failed to Changing checkBox" });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -114,6 +115,5 @@ export const CartController = {
   addToCart,
   getMyCart,
   deleteItem,
-  changeQuantity,
-  changeCheckBox,
+  handleCartAction,
 };

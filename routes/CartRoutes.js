@@ -3,8 +3,7 @@ import {
   addToCart,
   getMyCart,
   deleteItem,
-  changeQuantity,
-  changeCheckBox,
+  handleCartAction,
 } from "../controllers/cartController.js";
 import verifyJWT from "../middleware/verifyJWT.js";
 
@@ -15,7 +14,6 @@ router.get("/get-my-cart", verifyJWT, getMyCart);
 
 router.delete("/delete-item/:productId", verifyJWT, deleteItem);
 
-router.put("/changeQty/:itemId", verifyJWT, changeQuantity);
-router.put("/changeCheckBox/:itemId", verifyJWT, changeCheckBox);
+router.put("/handleCartAction/:itemId", verifyJWT, handleCartAction);
 
 export default router;
