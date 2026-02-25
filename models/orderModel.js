@@ -7,8 +7,12 @@ const userOrderSchema = new schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
     products: [],
-    totalPrice: number,
+    totalPrice: Number,
     tracking: {
       courier: String,
       trackingNumber: String,
@@ -21,5 +25,6 @@ const userOrderSchema = new schema(
   },
   { timestamps: true },
 );
+userOrderSchema.index({ unique: true });
 
 export default mongoose.model("userOrder", userOrderSchema);
