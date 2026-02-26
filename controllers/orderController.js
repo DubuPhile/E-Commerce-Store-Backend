@@ -38,3 +38,23 @@ export const confirmOrder = async (req, res) => {
     res.status(500).json({ success: false, message: "Error Confirming Order" });
   }
 };
+
+export const GetOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const foundOrders = await orderModel.find({
+      user: userId,
+    });
+    if (!foundOrders)
+      res.status(404).json({ success: false, message: "No Order found" });
+    res
+      .status(200)
+      .json({ success: true, message: "found Order", data: foundOrders });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .json({ success: false, messsage: "Invalid getting Orders" });
+  }
+};
