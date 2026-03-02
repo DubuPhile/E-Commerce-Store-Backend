@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { bucket } from "../config/firebase.js";
 import OTP from "../models/otpModel.js";
 import sendEmail from "../utils/sendEmail.js";
+import addressModel from "../models/addressModel.js";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
@@ -250,7 +251,7 @@ const changePwd = async (req, res) => {
     });
   }
 };
-
+//send OTP
 const sendOTP = async (req, res) => {
   try {
     const { email, type } = req.body;
@@ -304,7 +305,7 @@ const sendOTP = async (req, res) => {
     res.status(500).json({ success: false, message: "Error Sending OTP" });
   }
 };
-
+//verify OTP
 const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -335,6 +336,55 @@ const verifyOTP = async (req, res) => {
     res.status(500).json({ success: false, message: "Error verifying OTP" });
   }
 };
+//add address
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      fullName,
+      phone,
+      street,
+      city,
+      province,
+      postalCode,
+      country,
+      isDefault,
+    } = req.body;
+
+    const foundUser = await User.findOne({ _id: userId });
+    if (!foundUser) return res.status(404).json({ message: "User not found" });
+    const addressCount = await addressModel.countDocuments({ user: userId });
+
+    const shouldBeDefault = addressCount === 0 || isDefault === true;
+
+    if (shouldBeDefault) {
+      await addressModel.updateMany(
+        { user: userId },
+        { $set: { isDefault: false } },
+      );
+    }
+
+    const newAddress = await addressModel.create({
+      fullName,
+      phone,
+      street,
+      city,
+      province,
+      postalCode,
+      country,
+      user: userId,
+      isDefault: shouldBeDefault,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Address has been added!",
+      data: newAddress,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error to Add address!" });
+  }
+};
 export default {
   registerUser,
   LoginUser,
@@ -344,4 +394,5 @@ export default {
   changePwd,
   sendOTP,
   verifyOTP,
+  addAddress,
 };
