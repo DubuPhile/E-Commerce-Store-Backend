@@ -15,7 +15,7 @@ const addressSchema = new schema(
     province: String,
     postalCode: String,
     country: String,
-    isDefault: Boolean,
+    isDefault: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
