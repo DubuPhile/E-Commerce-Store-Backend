@@ -13,6 +13,12 @@ const userSchema = new schema({
   gender: { type: String, default: "Other" },
   date: String,
   image: String,
+  addresses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+    },
+  ],
   roles: {
     User: {
       type: Number,
