@@ -1,0 +1,23 @@
+import mongoose from "mongoose";
+const schema = mongoose.Schema;
+
+const addressSchema = new schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    fullName: String,
+    phone: String,
+    street: String,
+    city: String,
+    province: String,
+    postalCode: String,
+    country: String,
+    isDefault: Boolean,
+  },
+  { timestamps: true },
+);
+
+module.exports = mongoose.model("Address", addressSchema);
