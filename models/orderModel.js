@@ -11,6 +11,15 @@ const userOrderSchema = new schema(
       type: String,
       unique: true,
     },
+    shippingAddress: {
+      fullName: String,
+      phone: String,
+      street: String,
+      city: String,
+      province: String,
+      postalCode: String,
+      country: String,
+    },
     products: [],
     totalPrice: Number,
     tracking: {
