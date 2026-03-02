@@ -20,4 +20,4 @@ const addressSchema = new schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("Address", addressSchema);
+export default mongoose.model("Address", addressSchema);
