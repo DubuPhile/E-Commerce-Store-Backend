@@ -31,6 +31,8 @@ router.post("/change-password/send-otp", verifyJWT, userController.sendOTP); // 
 
 router.post("/verify-otp", verifyJWT, userController.verifyOTP); // Verify OTP
 
-router.post("/add-address", verifyJWT, userController.addAddress);
+router.post("/add-address", verifyJWT, userController.addAddress); //add Address
+
+router.get("/get-address", verifyJWT, userController.getAddresses); //get Address
 
 export default router;
