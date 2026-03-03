@@ -349,7 +349,10 @@ const addAddress = async (req, res) => {
       postalCode,
       country,
       isDefault,
-    } = req.body;
+    } = req.body.value;
+
+    if (!fullName || !phone || !street || !city || !province || !country)
+      return res.status(400).json({ message: "Invalid Input" });
 
     const foundUser = await User.findOne({ _id: userId });
     if (!foundUser) return res.status(404).json({ message: "User not found" });
@@ -375,6 +378,11 @@ const addAddress = async (req, res) => {
       user: userId,
       isDefault: shouldBeDefault,
     });
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $push: { addresses: newAddress._id } },
+      { new: true },
+    );
     res.status(201).json({
       success: true,
       message: "Address has been added!",
@@ -383,6 +391,23 @@ const addAddress = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: "Error to Add address!" });
+  }
+};
+
+const getAddresses = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const foundAddresses = await addressModel.find({ user: userId });
+    if (!foundAddresses)
+      return res.status(404).json({ message: "No Address Found" });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Address Found", data: foundAddresses });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error Getting Address" });
   }
 };
 export default {
@@ -395,4 +420,5 @@ export default {
   sendOTP,
   verifyOTP,
   addAddress,
+  getAddresses,
 };
