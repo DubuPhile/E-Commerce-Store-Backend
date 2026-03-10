@@ -410,6 +410,35 @@ const getAddresses = async (req, res) => {
     res.status(500).json({ success: false, message: "Error Getting Address" });
   }
 };
+
+const deleteAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const addressId = req.params.id;
+
+    const deletedAddress = await addressModel.findOneAndDelete({
+      _id: addressId,
+      user: userId,
+    });
+    if (!deletedAddress)
+      return res.status(404).json({ message: "No Address found" });
+    if (deletedAddress.isDefault) {
+      const anotherAddress = await addressModel
+        .findOne({ user: userId })
+        .sort({ createdAt: -1 });
+
+      if (anotherAddress) {
+        anotherAddress.isDefault = true;
+        await anotherAddress.save();
+      }
+    }
+    res.status(204).send();
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error Deleting Address" });
+  }
+};
+
 export default {
   registerUser,
   LoginUser,
@@ -421,4 +450,5 @@ export default {
   verifyOTP,
   addAddress,
   getAddresses,
+  deleteAddress,
 };
