@@ -37,4 +37,5 @@ router.get("/get-address", verifyJWT, userController.getAddresses); //get Addres
 
 router.delete("/delete-address/:id", verifyJWT, userController.deleteAddress); //delete Address
 
+router.put("/update-address/:id", verifyJWT, userController.updateAddress); //update Address
 export default router;
