@@ -35,4 +35,6 @@ router.post("/add-address", verifyJWT, userController.addAddress); //add Address
 
 router.get("/get-address", verifyJWT, userController.getAddresses); //get Address
 
+router.delete("/delete-address/:id", verifyJWT, userController.deleteAddress); //delete Address
+
 export default router;
