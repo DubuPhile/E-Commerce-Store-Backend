@@ -439,6 +439,34 @@ const deleteAddress = async (req, res) => {
   }
 };
 
+const updateAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const addressId = req.params.id;
+    const updateData = req.body;
+
+    if (updateData.isDefault) {
+      await addressModel.updateMany(
+        { user: userId },
+        { $set: { isDefault: false } },
+      );
+    }
+
+    const updatedAddress = await addressModel.findOneAndUpdate(
+      { _id: addressId, user: userId },
+      updateData,
+      { new: true },
+    );
+
+    if (!updatedAddress)
+      return res.status(404).json({ message: "Address not found" });
+
+    res.json(updatedAddress);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
+};
 export default {
   registerUser,
   LoginUser,
@@ -451,4 +479,5 @@ export default {
   addAddress,
   getAddresses,
   deleteAddress,
+  updateAddress,
 };
