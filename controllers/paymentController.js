@@ -43,3 +43,32 @@ export const createPaymentIntent = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const confirmPayment = async (req, res) => {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  try {
+    const { paymentIntentId } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    const payment = await Payment.findOne({
+      stripePaymentIntentId: paymentIntentId,
+    });
+
+    if (!payment) return res.status(404).json({ message: "Payment not found" });
+
+    if (paymentIntent.status === "succeeded") {
+      payment.status = "succeeded";
+      payment.paymentMethod = paymentIntent.payment_method_types[0];
+      await payment.save();
+    } else if (paymentIntent.status === "requires_payment_method") {
+      payment.status = "failed";
+      await payment.save();
+    }
+
+    res.json({ success: true, status: payment.status });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
