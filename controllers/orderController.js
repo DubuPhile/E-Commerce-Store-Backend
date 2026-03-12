@@ -13,7 +13,7 @@ export const confirmOrder = async (req, res) => {
     if (!foundUser)
       return res.status(401).json({ sucess: false, message: "Unauthorized" });
 
-    await orderModel.create({
+    const order = await orderModel.create({
       orderNumber,
       user: userId,
       products: products,
@@ -32,7 +32,9 @@ export const confirmOrder = async (req, res) => {
     if (mycart.items.length === 0) {
       await CartModel.deleteOne({ user: userId });
     }
-    res.status(200).json({ success: true, message: "Order Successfully!" });
+    res
+      .status(201)
+      .json({ success: true, message: "Order Successfully!", data: order });
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: "Error Confirming Order" });
