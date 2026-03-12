@@ -13,6 +13,8 @@ import refreshTokenRoutes from "./routes/refreshTokenRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import CartRoutes from "./routes/CartRoutes.js";
 import { fileURLToPath } from "url";
+import orderRoutes from "./routes/orderRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 dotenv.config();
 const app = express();
 
@@ -36,11 +38,9 @@ app.use("/user", userRoutes);
 app.use("/refresh", refreshTokenRoutes);
 app.use("/product", productRoutes);
 app.use("/cart", CartRoutes);
-//Static Files
-app.use(express.static(path.join(__dirname, "client", "dist")));
-app.get("{*splat}", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-});
+app.use("/order", orderRoutes);
+app.use("/pay", paymentRoutes);
+
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
