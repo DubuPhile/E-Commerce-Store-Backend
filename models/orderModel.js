@@ -31,9 +31,11 @@ const userOrderSchema = new schema(
         default: "Processing",
       },
     },
+    paymentMethod: {
+      type: String,
+    },
   },
   { timestamps: true },
 );
-userOrderSchema.index({ unique: true });
 
 export default mongoose.model("userOrder", userOrderSchema);
