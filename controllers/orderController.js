@@ -1,7 +1,32 @@
 import orderModel from "../models/orderModel.js";
 import user from "../models/user.js";
 import CartModel from "../models/CartModel.js";
+import checkOutModel from "../models/checkOutModel.js";
 import { getNextOrderNumber } from "../utils/generateOrderNumber.js";
+
+export const checkoutOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { totalPrice, products } = req.body;
+    const foundUser = await user.findOne({ _id: userId });
+    if (!foundUser)
+      return res.status(401).json({ sucess: false, message: "Unauthorized" });
+
+    const checkOutOrder = await checkOutModel.create({
+      user: userId,
+      products: products,
+      totalPrice: totalPrice,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Order Successfully!",
+      data: checkOutOrder,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error Check Out Order" });
+  }
+};
 
 export const confirmOrder = async (req, res) => {
   try {
