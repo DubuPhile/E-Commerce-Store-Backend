@@ -12,10 +12,13 @@ export const checkoutOrder = async (req, res) => {
     if (!foundUser)
       return res.status(401).json({ sucess: false, message: "Unauthorized" });
 
+    const expireTime = new Date(Date.now() + 30 * 60 * 1000);
+
     const checkOutOrder = await checkOutModel.create({
       user: userId,
       products: products,
       totalPrice: totalPrice,
+      expireAt: expireTime,
     });
     res.status(201).json({
       success: true,
