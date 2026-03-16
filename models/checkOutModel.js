@@ -5,9 +5,10 @@ const CheckoutSchema = new mongoose.Schema({
   products: [{ type: Object, required: true }],
   totalPrice: { type: Number, required: true },
   status: { type: String, default: "pending" },
-  createdAt: { type: Date, default: Date.now, index: true },
+  createdAt: { type: Date, default: Date.now },
+  expireAt: { type: Date },
 });
 
-CheckoutSchema.index({ expireAfterSeconds: 900 });
+CheckoutSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("checkout", CheckoutSchema);

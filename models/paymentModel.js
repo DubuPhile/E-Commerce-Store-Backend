@@ -10,7 +10,6 @@ const paymentSchema = new mongoose.Schema(
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userOrder",
-      required: true,
     },
     stripePaymentIntentId: {
       type: String,
@@ -32,8 +31,10 @@ const paymentSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
     },
+    expireAt: { type: Date },
   },
   { timestamps: true },
 );
+paymentSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Payment", paymentSchema);
