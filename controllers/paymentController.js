@@ -3,6 +3,7 @@ import Payment from "../models/paymentModel.js";
 import Order from "../models/orderModel.js";
 import user from "../models/user.js";
 import CartModel from "../models/CartModel.js";
+import checkOutModel from "../models/checkOutModel.js";
 
 export const createPaymentIntent = async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -13,10 +14,11 @@ export const createPaymentIntent = async (req, res) => {
     const foundUser = await user.findOne({ _id: userId });
     if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
 
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    const checkout = await checkOutModel.findById(orderId);
+    if (!checkout)
+      return res.status(404).json({ message: "Checkout not found" });
 
-    const amount = order.totalPrice;
+    const amount = checkout.totalPrice;
     const currency = "usd";
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -25,13 +27,14 @@ export const createPaymentIntent = async (req, res) => {
       automatic_payment_methods: { enabled: true },
     });
 
+    const expireTime = new Date(Date.now() + 30 * 60 * 1000);
     const payment = await Payment.create({
       user: userId,
-      order: orderId,
       stripePaymentIntentId: paymentIntent.id,
       amount,
       currency,
       status: "pending",
+      expireAt: expireTime,
     });
 
     res.json({
