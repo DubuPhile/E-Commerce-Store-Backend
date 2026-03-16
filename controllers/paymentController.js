@@ -75,3 +75,37 @@ export const confirmPayment = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const stripeWebhookController = async (req, res) => {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (err) {
+    console.log("Webhook signature verification failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
+    const orderId = paymentIntent.metadata.orderId;
+
+    try {
+      await Order.findByIdAndUpdate(orderId, {
+        paymentStatus: "paid",
+        paymentIntentId: paymentIntent.id,
+      });
+      console.log(`Order ${orderId} marked as paid.`);
+    } catch (err) {
+      console.log(`Failed to update order ${orderId}:`, err.message);
+    }
+  }
+
+  res.json({ received: true });
+};
