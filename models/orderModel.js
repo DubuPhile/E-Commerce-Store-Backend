@@ -34,6 +34,9 @@ const userOrderSchema = new schema(
     paymentMethod: {
       type: String,
     },
+    paymentStatus: {
+      type: String,
+    },
   },
   { timestamps: true },
 );
