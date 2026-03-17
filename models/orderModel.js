@@ -7,6 +7,10 @@ const userOrderSchema = new schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
+    checkout: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "checkout",
+    },
     orderNumber: {
       type: String,
       unique: true,
@@ -35,6 +39,9 @@ const userOrderSchema = new schema(
       type: String,
     },
     paymentStatus: {
+      type: String,
+    },
+    paymentIntentId: {
       type: String,
     },
   },
