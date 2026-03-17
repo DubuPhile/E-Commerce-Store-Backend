@@ -34,22 +34,37 @@ export const checkoutOrder = async (req, res) => {
 export const confirmOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { totalPrice, products } = req.body;
+    const { totalPrice, products, Address, paymentMethod, checkoutId } =
+      req.body;
     const orderNumber = await getNextOrderNumber();
 
     const foundUser = await user.findOne({ _id: userId });
     if (!foundUser)
       return res.status(401).json({ sucess: false, message: "Unauthorized" });
 
+    const selectedAddress = Address[0];
+
     const order = await orderModel.create({
       orderNumber,
+      checkout: checkoutId,
       user: userId,
       products: products,
       totalPrice: totalPrice,
+      shippingAddress: {
+        fullName: selectedAddress?.fullName,
+        phone: selectedAddress?.phone,
+        street: selectedAddress?.street,
+        city: selectedAddress?.city,
+        province: selectedAddress?.province,
+        postalCode: selectedAddress?.postalCode,
+        country: selectedAddress?.country,
+      },
       tracking: {
         courier: req.body.courier || "",
       },
+      paymentMethod,
     });
+
     const mycart = await CartModel.findOne({ user: userId }).populate(
       "items.product",
     );
