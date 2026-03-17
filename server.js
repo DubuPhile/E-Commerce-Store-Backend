@@ -15,6 +15,7 @@ import CartRoutes from "./routes/CartRoutes.js";
 import { fileURLToPath } from "url";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import stripeRoutes from "./routes/stripeRoutes.js";
 dotenv.config();
 const app = express();
 
@@ -26,6 +27,7 @@ connectDB();
 
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
+app.use("/stripe", stripeRoutes);
 
 //middleware
 app.use(credentials);
@@ -40,7 +42,11 @@ app.use("/product", productRoutes);
 app.use("/cart", CartRoutes);
 app.use("/order", orderRoutes);
 app.use("/pay", paymentRoutes);
-
+//Static Files
+// app.use(express.static(path.join(__dirname, "client", "dist")));
+// app.get("{*splat}", (req, res) => {
+//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+// });
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
