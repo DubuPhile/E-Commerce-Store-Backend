@@ -432,6 +432,11 @@ const deleteAddress = async (req, res) => {
         await anotherAddress.save();
       }
     }
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { addresses: addressId } },
+      { new: true },
+    );
     res.status(204).send();
   } catch (err) {
     console.log(err);
