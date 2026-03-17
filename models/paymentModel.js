@@ -7,9 +7,9 @@ const paymentSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    order: {
+    checkout: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "userOrder",
+      ref: "checkout",
     },
     stripePaymentIntentId: {
       type: String,
