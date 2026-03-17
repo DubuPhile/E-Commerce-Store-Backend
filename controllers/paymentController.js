@@ -2,8 +2,8 @@ import Stripe from "stripe";
 import Payment from "../models/paymentModel.js";
 import Order from "../models/orderModel.js";
 import user from "../models/user.js";
-import CartModel from "../models/CartModel.js";
 import checkOutModel from "../models/checkOutModel.js";
+import paymentModel from "../models/paymentModel.js";
 
 export const createPaymentIntent = async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -24,12 +24,16 @@ export const createPaymentIntent = async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency,
-      automatic_payment_methods: { enabled: true },
+      metadata: {
+        checkoutId: checkout._id.toString(),
+        userId: userId.toString(),
+      },
     });
 
     const expireTime = new Date(Date.now() + 30 * 60 * 1000);
     const payment = await Payment.create({
       user: userId,
+      checkout: checkout._id,
       stripePaymentIntentId: paymentIntent.id,
       amount,
       currency,
@@ -41,35 +45,6 @@ export const createPaymentIntent = async (req, res) => {
       clientSecret: paymentIntent.client_secret,
       paymentId: payment._id,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-  }
-};
-
-export const confirmPayment = async (req, res) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  try {
-    const { paymentIntentId } = req.body;
-
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    const payment = await Payment.findOne({
-      stripePaymentIntentId: paymentIntentId,
-    });
-
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
-
-    if (paymentIntent.status === "succeeded") {
-      payment.status = "succeeded";
-      payment.paymentMethod = paymentIntent.payment_method_types[0];
-      await payment.save();
-    } else if (paymentIntent.status === "requires_payment_method") {
-      payment.status = "failed";
-      await payment.save();
-    }
-
-    res.json({ success: true, status: payment.status });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
@@ -94,16 +69,30 @@ export const stripeWebhookController = async (req, res) => {
 
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
-    const orderId = paymentIntent.metadata.orderId;
+    const checkoutId = paymentIntent.metadata.checkoutId;
+    const userId = paymentIntent.metadata.userId;
 
     try {
-      await Order.findByIdAndUpdate(orderId, {
-        paymentStatus: "paid",
-        paymentIntentId: paymentIntent.id,
-      });
-      console.log(`Order ${orderId} marked as paid.`);
+      const updated = await Order.findOneAndUpdate(
+        { checkout: checkoutId },
+        {
+          paymentStatus: "paid",
+          paymentIntentId: paymentIntent.id,
+        },
+      );
+      const payment = await paymentModel.findOneAndUpdate(
+        {
+          checkout: checkoutId,
+          user: userId,
+          stripePaymentIntentId: paymentIntent.id,
+        },
+        { expireAt: null, status: "succeeded", paymentMethod: "Card" },
+      );
+      if (!updated && !payment)
+        return res.status(400).json({ message: `Faild to Update` });
+      console.log(`Order ${checkoutId} marked as paid.`);
     } catch (err) {
-      console.log(`Failed to update order ${orderId}:`, err.message);
+      console.log(`Failed to update order ${checkoutId}:`, err.message);
     }
   }
 
