@@ -103,3 +103,30 @@ export const GetOrders = async (req, res) => {
       .json({ success: false, messsage: "Invalid getting Orders" });
   }
 };
+export const GetCheckout = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { checkoutId } = req.params;
+
+    const foundOrders = await checkOutModel.find({
+      user: userId,
+      _id: checkoutId,
+    });
+    if (!foundOrders)
+      res
+        .status(404)
+        .json({ success: false, message: "No Checkout Order found" });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "found checkout Order",
+        data: foundOrders,
+      });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .json({ success: false, messsage: "Invalid getting Orders" });
+  }
+};
