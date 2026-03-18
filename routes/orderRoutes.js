@@ -2,6 +2,7 @@ import express from "express";
 import {
   checkoutOrder,
   confirmOrder,
+  GetCheckout,
   GetOrders,
 } from "../controllers/orderController.js";
 import verifyJWT from "../middleware/verifyJWT.js";
@@ -12,5 +13,7 @@ router.post("/checkout-order", verifyJWT, checkoutOrder);
 router.post("/confirm-order", verifyJWT, confirmOrder);
 
 router.get("/get-orders", verifyJWT, GetOrders);
+
+router.get("/get-checkout/:checkoutId", verifyJWT, GetCheckout);
 
 export default router;
