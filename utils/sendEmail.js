@@ -1,20 +1,15 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
 const sendEmail = async ({ to, subject = "Verification OTP", html }) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.sendgrid.net",
-    port: 587,
-    auth: {
-      user: "apikey",
-      pass: process.env.SENDGRID_API_KEY,
-    },
-  });
-  return transporter.sendMail({
-    from: `"E-commerce-Store" <${process.env.EMAIL_USER}>`,
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const msg = {
     to,
+    from: process.env.EMAIL_USER,
     subject,
     html,
-  });
+  };
+
+  return sgMail.send(msg);
 };
 
 export default sendEmail;
