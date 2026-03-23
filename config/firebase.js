@@ -1,7 +1,9 @@
 import admin from "firebase-admin";
 import fs from "fs";
 const serviceAccount = JSON.parse(
-  fs.readFileSync(new URL("../FirebaseKey.json", import.meta.url)),
+  process.env.NODE_ENV === "production"
+    ? fs.readFileSync(new URL("/etc/secrets/FirebaseKey.json", import.meta.url))
+    : fs.readFileSync(new URL("../FirebaseKey.json", import.meta.url)),
 );
 
 admin.initializeApp({
