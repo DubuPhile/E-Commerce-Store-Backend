@@ -25,12 +25,12 @@ const __dirname = path.dirname(__filename);
 
 connectDB();
 
-app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use("/stripe", stripeRoutes);
 
 //middleware
 app.use(credentials);
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
