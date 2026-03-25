@@ -44,6 +44,18 @@ export const confirmOrder = async (req, res) => {
 
     const selectedAddress = Address[0];
 
+    const mycart = await CartModel.findOne({ user: userId }).populate(
+      "items.product",
+    );
+    if (mycart) {
+      mycart.items = mycart.items.filter((item) => item.checkBox === false);
+      await mycart.save();
+
+      if (mycart.items.length === 0) {
+        await CartModel.deleteOne({ user: userId });
+      }
+    }
+
     const order = await orderModel.create({
       orderNumber,
       checkout: checkoutId,
@@ -65,16 +77,6 @@ export const confirmOrder = async (req, res) => {
       paymentMethod,
     });
 
-    const mycart = await CartModel.findOne({ user: userId }).populate(
-      "items.product",
-    );
-    if (mycart) {
-      mycart.items = mycart.items.filter((item) => item.checkBox === false);
-      await mycart.save();
-    }
-    if (mycart.items.length === 0) {
-      await CartModel.deleteOne({ user: userId });
-    }
     res
       .status(201)
       .json({ success: true, message: "Order Successfully!", data: order });
@@ -116,13 +118,11 @@ export const GetCheckout = async (req, res) => {
       res
         .status(404)
         .json({ success: false, message: "No Checkout Order found" });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "found checkout Order",
-        data: foundOrders,
-      });
+    res.status(200).json({
+      success: true,
+      message: "found checkout Order",
+      data: foundOrders,
+    });
   } catch (err) {
     console.log(err);
     res
