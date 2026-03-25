@@ -78,12 +78,12 @@ const LoginUser = async (req, res) => {
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1d" },
+        { expiresIn: "1h" },
       );
       const refreshToken = jwt.sign(
         { user: foundUser.user },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "1h" },
+        { expiresIn: "1d" },
       );
       foundUser.refreshToken = refreshToken;
       const result = await foundUser.save();
