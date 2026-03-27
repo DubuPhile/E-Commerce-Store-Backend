@@ -4,6 +4,7 @@ import Order from "../models/orderModel.js";
 import user from "../models/user.js";
 import checkOutModel from "../models/checkOutModel.js";
 import paymentModel from "../models/paymentModel.js";
+import mongoose from "mongoose";
 
 export const createPaymentIntent = async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
