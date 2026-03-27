@@ -4,7 +4,6 @@ import Order from "../models/orderModel.js";
 import user from "../models/user.js";
 import checkOutModel from "../models/checkOutModel.js";
 import paymentModel from "../models/paymentModel.js";
-import mongoose from "mongoose";
 
 export const createPaymentIntent = async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -75,15 +74,13 @@ export const stripeWebhookController = async (req, res) => {
 
     try {
       const updated = await Order.findOneAndUpdate(
-        {
-          checkout: new mongoose.Types.ObjectId(checkoutId),
-          user: new mongoose.Types.ObjectId(userId),
-        },
+        { checkout: checkoutId, user: userId },
         {
           paymentStatus: "paid",
           paymentIntentId: paymentIntent.id,
         },
       );
+      console.log(updated);
       const payment = await paymentModel.findOneAndUpdate(
         {
           checkout: checkoutId,
@@ -92,8 +89,9 @@ export const stripeWebhookController = async (req, res) => {
         },
         { expireAt: null, status: "succeeded", paymentMethod: "Card" },
       );
-      if (!updated && !payment)
+      if (!updated && !payment) {
         return res.status(400).json({ message: `Faild to Update` });
+      }
       console.log(`Order ${checkoutId} marked as paid.`);
     } catch (err) {
       console.log(`Failed to update order ${checkoutId}:`, err.message);
