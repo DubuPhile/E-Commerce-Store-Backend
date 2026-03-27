@@ -74,7 +74,10 @@ export const stripeWebhookController = async (req, res) => {
 
     try {
       const updated = await Order.findOneAndUpdate(
-        { checkout: checkoutId, user: userId },
+        {
+          checkout: new mongoose.Types.ObjectId(checkoutId),
+          user: new mongoose.Types.ObjectId(userId),
+        },
         {
           paymentStatus: "paid",
           paymentIntentId: paymentIntent.id,
