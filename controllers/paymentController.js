@@ -80,7 +80,9 @@ export const stripeWebhookController = async (req, res) => {
           paymentIntentId: paymentIntent.id,
         },
       );
-      console.log(updated);
+      if (!updated) {
+        return res.status(400).json({ message: `❌ Order not updated` });
+      }
       const payment = await paymentModel.findOneAndUpdate(
         {
           checkout: checkoutId,
@@ -89,8 +91,8 @@ export const stripeWebhookController = async (req, res) => {
         },
         { expireAt: null, status: "succeeded", paymentMethod: "Card" },
       );
-      if (!updated && !payment) {
-        return res.status(400).json({ message: `Faild to Update` });
+      if (!payment) {
+        return res.status(400).json({ message: `❌ Payment not updated` });
       }
       console.log(`Order ${checkoutId} marked as paid.`);
     } catch (err) {
