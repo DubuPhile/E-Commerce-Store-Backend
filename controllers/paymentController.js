@@ -80,6 +80,7 @@ export const stripeWebhookController = async (req, res) => {
           paymentIntentId: paymentIntent.id,
         },
       );
+      console.log(updated);
       if (!updated) {
         return res.status(400).json({ message: `❌ Order not updated` });
       }
