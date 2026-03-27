@@ -66,7 +66,7 @@ export const stripeWebhookController = async (req, res) => {
     console.log("Webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
+  console.log(event);
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
     const checkoutId = paymentIntent.metadata.checkoutId;
